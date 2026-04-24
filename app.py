@@ -3,12 +3,26 @@ import json
 import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
-
 from pathlib import Path
-
 import pandas as pd
 import streamlit as st
+import pyodbc
 
+def get_sql_connection():
+    cfg = st.secrets["azure_sql"]
+
+    conn_str = (
+        "DRIVER={ODBC Driver 18 for SQL Server};"
+        f"SERVER={cfg['server']};"
+        f"DATABASE={cfg['database']};"
+        f"UID={cfg['username']};"
+        f"PWD={cfg['password']};"
+        "Encrypt=yes;"
+        "TrustServerCertificate=no;"
+        "Connection Timeout=30;"
+    )
+
+    return pyodbc.connect(conn_str)
 
 CLINIC_DEFAULT_ROOMS = {
     "DMC": [
@@ -33,7 +47,37 @@ CLINIC_DEFAULT_ROOMS = {
 
 DATA_DIR = Path("clinic_data")
 DATA_DIR.mkdir(exist_ok=True)
+CENTRAL = ZoneInfo("America/Chicago")
 
+def log_history(clinic: str, room_data: dict) -> None:
+    check_in = parse_dt(room_data.get("check_in_time"))
+    if not check_in:
+        return
+
+    check_out = datetime.now(CENTRAL)
+    wait_minutes = int((check_out - check_in).total_seconds() // 60)
+
+    conn = get_sql_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO dbo.WaitTimeHistory
+            (clinic, room, patient, check_in_time, check_out_time, wait_minutes, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        clinic,
+        room_data.get("room", ""),
+        room_data.get("patient", ""),
+        check_in,
+        check_out,
+        wait_minutes,
+        room_data.get("notes", ""),
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 def clinic_file(clinic: str) -> Path:
     safe_name = clinic.lower().replace(" ", "_")
@@ -130,7 +174,9 @@ def check_in(data: list[dict], index: int, patient: str, notes: str) -> None:
     data[index]["notes"] = notes.strip()
 
 
-def check_out(data: list[dict], index: int) -> None:
+def check_out(clinic: str, data: list[dict], index: int) -> None:
+    log_history(clinic, data[index])
+
     data[index]["status"] = "Checked Out"
     data[index]["patient"] = ""
     data[index]["check_in_time"] = None
@@ -199,7 +245,7 @@ with st.sidebar:
         col_a, col_b = st.columns(2)
         with col_a:
             if st.button("Check Out", use_container_width=True):
-                check_out(data, action_index)
+                check_out(clinic, data, action_index)
                 save_data(clinic, data)
                 st.rerun()
         with col_b:
