@@ -8,15 +8,25 @@ import pandas as pd
 import streamlit as st
 import pymssql
 
-def get_sql_connection():
+def get_sql_connection(max_retries=5, delay_seconds=8):
     cfg = st.secrets["azure_sql"]
+    last_error = None
 
-    return pymssql.connect(
-        server=cfg["server"],
-        user=cfg["username"],
-        password=cfg["password"],
-        database=cfg["database"],
-    )
+    for attempt in range(1, max_retries + 1):
+        try:
+            return pymssql.connect(
+                server=cfg["server"],
+                user=cfg["username"],
+                password=cfg["password"],
+                database=cfg["database"],
+                login_timeout=30,
+                timeout=30,
+            )
+        except pymssql.OperationalError as e:
+            last_error = e
+            time.sleep(delay_seconds)
+
+    raise last_error
 
 CLINIC_DEFAULT_ROOMS = {
     "DMC": [
