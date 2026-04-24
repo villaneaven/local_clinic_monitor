@@ -7,16 +7,35 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-DATA_FILE = Path("clinic_queue.json")
 
-DEFAULT_ROOMS = [
-    "Room 1",
-    "Room 2",
-    "Room 3",
-    "Room 4",
-    "Room 5",
-    "Room 6",
-]
+CLINIC_DEFAULT_ROOMS = {
+    "DMC": [
+        "DMC Room 1",
+        "DMC Room 2",
+        "DMC Room 3",
+        "DMC Room 4",
+    ],
+    "EMC": [
+        "EMC Room 1",
+        "EMC Room 2",
+        "EMC Room 3",
+        "EMC Room 4",
+    ],
+    "DDNC": [
+        "DDNC Room 1",
+        "DDNC Room 2",
+        "DDNC Room 3",
+        "DDNC Room 4",
+    ],
+}
+
+DATA_DIR = Path("clinic_data")
+DATA_DIR.mkdir(exist_ok=True)
+
+
+def clinic_file(clinic: str) -> Path:
+    safe_name = clinic.lower().replace(" ", "_")
+    return DATA_DIR / f"{safe_name}_queue.json"
 
 
 def now_iso() -> str:
@@ -32,14 +51,8 @@ def parse_dt(value: str | None):
         return None
 
 
-def load_data() -> list[dict]:
-    if DATA_FILE.exists():
-        try:
-            return json.loads(DATA_FILE.read_text())
-        except json.JSONDecodeError:
-            pass
-
-    data = [
+def default_data_for_clinic(clinic: str) -> list[dict]:
+    return [
         {
             "room": room,
             "patient": "",
@@ -47,14 +60,30 @@ def load_data() -> list[dict]:
             "check_in_time": None,
             "notes": "",
         }
-        for room in DEFAULT_ROOMS
+        for room in CLINIC_DEFAULT_ROOMS[clinic]
     ]
-    save_data(data)
+
+
+def load_data(clinic: str) -> list[dict]:
+    data_file = clinic_file(clinic)
+
+    if data_file.exists():
+        try:
+            return json.loads(data_file.read_text())
+        except json.JSONDecodeError:
+            pass
+
+    data = default_data_for_clinic(clinic)
+    save_data(clinic, data)
     return data
 
 
-def save_data(data: list[dict]) -> None:
-    DATA_FILE.write_text(json.dumps(data, indent=2))
+def save_data(clinic: str, data: list[dict]) -> None:
+    clinic_file(clinic).write_text(json.dumps(data, indent=2))
+
+
+def reset_clinic_rooms(clinic: str) -> None:
+    save_data(clinic, default_data_for_clinic(clinic))
 
 
 def elapsed_text(check_in_time: str | None) -> str:
@@ -97,7 +126,6 @@ def check_in(data: list[dict], index: int, patient: str, notes: str) -> None:
     data[index]["status"] = "Checked In"
     data[index]["check_in_time"] = now_iso()
     data[index]["notes"] = notes.strip()
-    save_data(data)
 
 
 def check_out(data: list[dict], index: int) -> None:
@@ -105,7 +133,6 @@ def check_out(data: list[dict], index: int) -> None:
     data[index]["patient"] = ""
     data[index]["check_in_time"] = None
     data[index]["notes"] = ""
-    save_data(data)
 
 
 def clear_room(data: list[dict], index: int) -> None:
@@ -113,7 +140,6 @@ def clear_room(data: list[dict], index: int) -> None:
     data[index]["patient"] = ""
     data[index]["check_in_time"] = None
     data[index]["notes"] = ""
-    save_data(data)
 
 
 st.set_page_config(
@@ -122,47 +148,63 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("Clinic Check-In Monitor")
-
-# Auto-refresh every 10 seconds.
-refresh_seconds = st.sidebar.slider("Refresh monitor every seconds", 5, 60, 10)
-time.sleep(0.1)
-st.sidebar.caption(f"Screen refreshes every {refresh_seconds} seconds.")
-
-data = load_data()
+st.title("🏥 Clinic Check-In Monitor")
 
 with st.sidebar:
+    st.header("Clinic")
+    clinic = st.selectbox("Select clinic", list(CLINIC_DEFAULT_ROOMS.keys()))
+
+    st.divider()
+    refresh_seconds = st.slider("Refresh monitor every seconds", 5, 60, 10)
+    st.caption(f"Screen refreshes every {refresh_seconds} seconds.")
+
+data = load_data(clinic)
+
+st.subheader(f"{clinic} Live Monitor")
+
+with st.sidebar:
+    st.divider()
     st.header("Check In Patient")
 
     rooms = [item["room"] for item in data]
-    selected_room = st.selectbox("Room", rooms)
-    selected_index = rooms.index(selected_room)
 
-    patient = st.text_input("Patient name or initials")
-    notes = st.text_area("Notes", height=80)
+    if not rooms:
+        st.warning("No rooms exist for this clinic. Add a room below or reset defaults.")
+    else:
+        selected_room = st.selectbox("Room", rooms)
+        selected_index = rooms.index(selected_room)
 
-    if st.button("Check In", type="primary", use_container_width=True):
-        if not patient.strip():
-            st.warning("Enter a patient name or initials first.")
-        else:
-            check_in(data, selected_index, patient, notes)
-            st.rerun()
+        patient = st.text_input("Patient name or initials")
+        notes = st.text_area("Notes", height=80)
+
+        if st.button("Check In", type="primary", use_container_width=True):
+            if not patient.strip():
+                st.warning("Enter a patient name or initials first.")
+            else:
+                check_in(data, selected_index, patient, notes)
+                save_data(clinic, data)
+                st.rerun()
 
     st.divider()
 
     st.header("Room Actions")
-    action_room = st.selectbox("Select room", rooms, key="action_room")
-    action_index = rooms.index(action_room)
+    rooms = [item["room"] for item in data]
 
-    col_a, col_b = st.columns(2)
-    with col_a:
-        if st.button("Check Out", use_container_width=True):
-            check_out(data, action_index)
-            st.rerun()
-    with col_b:
-        if st.button("Clear", use_container_width=True):
-            clear_room(data, action_index)
-            st.rerun()
+    if rooms:
+        action_room = st.selectbox("Select room", rooms, key="action_room")
+        action_index = rooms.index(action_room)
+
+        col_a, col_b = st.columns(2)
+        with col_a:
+            if st.button("Check Out", use_container_width=True):
+                check_out(data, action_index)
+                save_data(clinic, data)
+                st.rerun()
+        with col_b:
+            if st.button("Clear", use_container_width=True):
+                clear_room(data, action_index)
+                save_data(clinic, data)
+                st.rerun()
 
     st.divider()
 
@@ -179,26 +221,33 @@ with st.sidebar:
                     "notes": "",
                 }
             )
-            save_data(data)
+            save_data(clinic, data)
             st.rerun()
 
+    rooms = [item["room"] for item in data]
     remove_room = st.selectbox("Remove room", [""] + rooms)
     if st.button("Remove Selected Room", use_container_width=True):
         if remove_room:
             data = [item for item in data if item["room"] != remove_room]
-            save_data(data)
+            save_data(clinic, data)
             st.rerun()
+
+    if st.button("Reset This Clinic to Default Rooms", use_container_width=True):
+        reset_clinic_rooms(clinic)
+        st.rerun()
 
 monitor_rows = []
 for item in data:
     minutes = elapsed_minutes(item["check_in_time"])
+    checked_in_at = parse_dt(item["check_in_time"])
     monitor_rows.append(
         {
+            "Clinic": clinic,
             "Room": item["room"],
             "Patient": item["patient"],
             "Status": status_badge(item["status"], minutes),
             "Wait Time": elapsed_text(item["check_in_time"]),
-            "Checked In At": parse_dt(item["check_in_time"]).strftime("%I:%M %p") if parse_dt(item["check_in_time"]) else "",
+            "Checked In At": checked_in_at.strftime("%I:%M %p") if checked_in_at else "",
             "Notes": item["notes"],
             "_minutes": minutes,
         }
@@ -215,19 +264,15 @@ m3.metric("Longest Wait", f"{longest_wait} min")
 
 st.divider()
 
-st.subheader("Live Room Monitor")
-
 display_df = pd.DataFrame(monitor_rows).drop(columns=["_minutes"])
 
 def highlight_wait(row):
     raw = next((r for r in monitor_rows if r["Room"] == row["Room"]), None)
     minutes = raw["_minutes"] if raw else 0
 
-    # Leave non-checked-in rows alone so they follow the app/browser theme.
     if "Checked In" not in row["Status"]:
         return [""] * len(row)
 
-    # Force dark text only on colored checked-in rows.
     base_style = "color: #111111; font-weight: bold"
 
     if minutes >= 30:
@@ -243,8 +288,7 @@ st.dataframe(
     height=500,
 )
 
-st.caption("Color rules: yellow under 15 minutes, orange after 15 minutes, red after 30 minutes.")
+st.caption("Color rules: green under 15 minutes, orange after 15 minutes, red after 30 minutes.")
 
-# This causes the monitor to refresh.
 time.sleep(refresh_seconds)
 st.rerun()

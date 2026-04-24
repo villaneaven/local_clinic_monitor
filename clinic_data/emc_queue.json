@@ -1,0 +1,30 @@
+[
+  {
+    "room": "EMC Room 1",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "EMC Room 2",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "EMC Room 3",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "EMC Room 4",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  }
+]
