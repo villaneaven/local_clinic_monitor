@@ -1,0 +1,31 @@
+[
+  {
+    "room": "MIM Room 1",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "MIM Room 2",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "MIM Room 3",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "MIM Room 4",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  }
+
+]

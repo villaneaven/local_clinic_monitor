@@ -1,0 +1,31 @@
+[
+  {
+    "room": "PIHC Room 1",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "PIHC Room 2",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "PIHC Room 3",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "PIHC Room 4",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  }
+
+]

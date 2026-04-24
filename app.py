@@ -43,6 +43,30 @@ CLINIC_DEFAULT_ROOMS = {
         "DDNC Room 3",
         "DDNC Room 4",
     ],
+    "PIHC": [
+        "PIHC Room 1",
+        "PIHC Room 2",
+        "PIHC Room 3",
+        "PIHC Room 4",
+    ],
+    "WFCC": [
+        "WFCC Room 1",
+        "WFCC Room 2",
+        "WFCC Room 3",
+        "WFCC Room 4",
+    ],
+    "VFC": [
+        "VFC Room 1",
+        "VFC Room 2",
+        "VFC Room 3",
+        "VFC Room 4",
+    ],
+    "MIM": [
+        "MIM Room 1",
+        "MIM Room 2",
+        "MIM Room 3",
+        "MIM Room 4",
+    ],
 }
 
 DATA_DIR = Path("clinic_data")

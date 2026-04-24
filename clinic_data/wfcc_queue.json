@@ -1,0 +1,31 @@
+[
+  {
+    "room": "WFCC Room 1",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "WFCC Room 2",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "WFCC Room 3",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "WFCC Room 4",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  }
+
+]
