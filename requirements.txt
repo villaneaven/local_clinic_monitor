@@ -1,3 +1,5 @@
 streamlit
 pandas
 pyodbc
+msodbcsql18
+unixodbc-dev
