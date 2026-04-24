@@ -6,23 +6,17 @@ from zoneinfo import ZoneInfo
 from pathlib import Path
 import pandas as pd
 import streamlit as st
-import pyodbc
+import pymssql
 
 def get_sql_connection():
     cfg = st.secrets["azure_sql"]
 
-    conn_str = (
-        "DRIVER={ODBC Driver 18 for SQL Server};"
-        f"SERVER={cfg['server']};"
-        f"DATABASE={cfg['database']};"
-        f"UID={cfg['username']};"
-        f"PWD={cfg['password']};"
-        "Encrypt=yes;"
-        "TrustServerCertificate=no;"
-        "Connection Timeout=30;"
+    return pymssql.connect(
+        server=cfg["server"],
+        user=cfg["username"],
+        password=cfg["password"],
+        database=cfg["database"],
     )
-
-    return pyodbc.connect(conn_str)
 
 CLINIC_DEFAULT_ROOMS = {
     "DMC": [
