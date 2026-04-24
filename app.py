@@ -82,15 +82,17 @@ def log_history(clinic: str, room_data: dict) -> None:
         """
         INSERT INTO dbo.WaitTimeHistory
             (clinic, room, patient, check_in_time, check_out_time, wait_minutes, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
         """,
-        clinic,
-        room_data.get("room", ""),
-        room_data.get("patient", ""),
-        check_in,
-        check_out,
-        wait_minutes,
-        room_data.get("notes", ""),
+        (
+            clinic,
+            room_data.get("room", ""),
+            room_data.get("patient", ""),
+            check_in,
+            check_out,
+            wait_minutes,
+            room_data.get("notes", ""),
+        ),
     )
 
     conn.commit()
