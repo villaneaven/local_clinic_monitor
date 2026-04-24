@@ -1,0 +1,58 @@
+[
+  {
+    "room": "Room 1",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "Room 2",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "Room 3",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "Room 4",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "Room 5",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "Room 6",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "Room 7",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  },
+  {
+    "room": "Room 8",
+    "patient": "",
+    "status": "Available",
+    "check_in_time": null,
+    "notes": ""
+  }
+]
