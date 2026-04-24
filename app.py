@@ -2,6 +2,8 @@
 import json
 import time
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from pathlib import Path
 
 import pandas as pd
@@ -39,7 +41,7 @@ def clinic_file(clinic: str) -> Path:
 
 
 def now_iso() -> str:
-    return datetime.now().isoformat(timespec="seconds")
+    return datetime.now(ZoneInfo("America/Chicago")).isoformat(timespec="seconds")
 
 
 def parse_dt(value: str | None):
@@ -90,7 +92,7 @@ def elapsed_text(check_in_time: str | None) -> str:
     check_in = parse_dt(check_in_time)
     if not check_in:
         return ""
-    seconds = int((datetime.now() - check_in).total_seconds())
+    seconds = int((datetime.now(ZoneInfo("America/Chicago")) - check_in).total_seconds())
     if seconds < 0:
         seconds = 0
     minutes = seconds // 60
@@ -106,7 +108,7 @@ def elapsed_minutes(check_in_time: str | None) -> int:
     check_in = parse_dt(check_in_time)
     if not check_in:
         return 0
-    return max(0, int((datetime.now() - check_in).total_seconds() // 60))
+    return max(0, int((datetime.now(ZoneInfo("America/Chicago")) - check_in).total_seconds() // 60))
 
 
 def status_badge(status: str, minutes: int) -> str:
@@ -148,7 +150,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("🏥 Clinic Check-In Monitor")
+st.title("Clinic Check-In Monitor")
 
 with st.sidebar:
     st.header("Clinic")
